@@ -1,0 +1,21 @@
+// Firestore contact schema example
+// Collection: contacts
+// Document ID: auto-generated or a custom UUID
+{
+  "name": "Lulu Yuen Chen",
+  "whatsapp": "+1234567890", // WhatsApp phone number (or ID)
+  "instagram": "latitude",    // Instagram username or ID
+  "signal": "+1234567890",    // Signal phone number (or ID)
+  "messenger": "1000123456789", // Messenger user ID
+  "aliases": ["Lulu", "Latitude", "Lulu Yuen Chen"] // Optional: for search
+}
+
+// Each message in consortium_vault will have a contactId field referencing the contact
+// Example message document:
+{
+  "contactId": "abc123def456", // Firestore doc ID from contacts
+  "app": "whatsapp",
+  "from": "+1234567890",
+  "text": "Hey!",
+  "timestamp": ...
+}

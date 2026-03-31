@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vault Command Center</title>
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body { background-color: #0d1117; color: #c9d1d9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; }
+    .container { max-width: 700px; margin: 0 auto; }
+    .header { border-bottom: 2px solid #238636; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+    input, select, button { padding: 12px; border-radius: 6px; border: 1px solid #30363d; background: #010409; color: #58a6ff; font-weight: bold; }
+    button { cursor: pointer; background: #238636; color: white; border: none; transition: 0.3s; }
+    button:hover { background: #2ea043; }
+    .filter-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 20px; }
+    .msg-card { background: #161b22; padding: 15px; border-radius: 8px; margin-bottom: 12px; border-left: 5px solid #58a6ff; position: relative; animation: slideIn 0.3s ease-out; }
+    .app-badge { position: absolute; top: 10px; right: 10px; font-size: 0.7em; background: #30363d; padding: 4px 8px; border-radius: 12px; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>Consortium Vault v1.0</h2>
+      <div id="status" style="font-size: 0.8em; color: #238636;">● SYSTEM ONLINE</div>
+    </div>
+
+    <input type="text" id="searchInput" placeholder="Search Lulu, Meta, or keywords..." style="width: 100%; box-sizing: border-box; margin-bottom: 15px;">
+
+    <div class="filter-bar">
+      <button onclick="setFilter('ALL')" id="btn-ALL" class="filter-btn active">ALL</button>
+      <button onclick="setFilter('WHATSAPP')" id="btn-WHATSAPP">WHATSAPP</button>
+      <button onclick="setFilter('SIGNAL')" id="btn-SIGNAL">SIGNAL</button>
+      <button onclick="setFilter('META')" id="btn-META">META</button>
+      <button onclick="setFilter('INSTAGRAM')" id="btn-INSTAGRAM">INSTAGRAM</button>
+    </div>
+
+    <div id="feed"></div>
+  </div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .filter-btn {
+        background: #238636;
+        border: none;
+        padding: 8px 16px;
+        transition: opacity 0.2s;
+      }
+      #message-feed {
+        margin-top: 20px;
+        border-top: 1px solid #30363d;
+        padding-top: 20px;
+      }
+      .message-card {
+        background: #161b22;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border-left: 4px solid #58a6ff;
+      }
+      .time {
+        font-size: 0.8em;
+        color: #8b949e;
+        display: block;
+        margin-top: 5px;
+      }
+      .app-tag {
+        font-size: 0.7em;
+        background: #30363d;
+        padding: 2px 6px;
+        border-radius: 10px;
+        margin-bottom: 8px;
+        display: inline-block;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Vault Command Center</h2>
+
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search entire archive..."
+        style="width: 100%; box-sizing: border-box"
+      />
+
+      <div class="filter-buttons" style="margin-top: 15px">
+        <button class="filter-btn" style="opacity: 1">All</button>
+        <button class="filter-btn" style="opacity: 0.5">WhatsApp</button>
+        <button class="filter-btn" style="opacity: 0.5">Signal</button>
+        <button class="filter-btn" style="opacity: 0.5">Meta</button>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 10px">
+        <select id="appSource">
+          <option value="manual">Manual</option>
+          <option value="whatsapp">WhatsApp</option>
+          <option value="signal">Signal</option>
+          <option value="meta">Meta</option>
+        </select>
+        <input
+          type="text"
+          id="msgInput"
+          placeholder="Type message for Lulu archive..."
+          style="flex-grow: 1"
+        />
+        <button id="sendBtn">ARCHIVE</button>
+      </div>
+
+      <div id="message-feed"></div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
