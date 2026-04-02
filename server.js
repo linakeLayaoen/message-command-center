@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const app = express();
 app.use(express.json());
 
@@ -6,16 +7,20 @@ app.use(express.json());
 const admin = require("firebase-admin");
 let db;
 try {
+  // Load service account from file path (works locally and on Render with secret files)
+  const credPath =
+    process.env.GOOGLE_APPLICATION_CREDENTIALS ||
+    path.join(__dirname, "firebase-key.json");
+  const serviceAccount = require(credPath);
   if (!admin.apps.length) {
     admin.initializeApp({
-      credential: admin.credential.applicationDefault(),
-      // Optionally add databaseURL if needed
+      credential: admin.credential.cert(serviceAccount),
     });
   }
   db = admin.firestore();
-  console.log("Firebase initialized");
+  console.log("Firebase initialized successfully");
 } catch (err) {
-  console.error("Firebase initialization error:", err);
+  console.error("Firebase initialization error:", err.message);
 }
 
 const PORT = process.env.PORT || 10000;
@@ -49,27 +54,70 @@ app.post("/deletion", (req, res) => {
 
 // --- Unified /webhook POST route for incoming messages ---
 app.post("/webhook", (req, res) => {
-  // Detect which app the message is coming from
-  const sourceApp = req.body.entry ? "messenger" : "whatsapp";
-  const messageData = {
-    app: sourceApp,
-    from: req.body.sender_name || "Lulu",
-    text: req.body.message_text,
-    timestamp: new Date().toLocaleTimeString(),
-  };
-  // Log the event
-  console.log("Incoming Message Event Received", messageData);
+  const body = req.body;
+  console.log("Webhook POST received:", JSON.stringify(body, null, 2));
 
-  // Save to Firebase if db is available
-  if (db && db.collection) {
-    db.collection("vault_messages")
-      .add(messageData)
-      .then(() => res.sendStatus(200))
-      .catch((err) => {
-        console.error("Firebase error:", err);
-        res.sendStatus(500);
-      });
-  } else {
+  if (!db) {
+    console.error("Firestore not initialized");
+    return res.sendStatus(500);
+  }
+
+  try {
+    // WhatsApp Business API payload
+    if (body.object === "whatsapp_business_account" && body.entry) {
+      for (const entry of body.entry) {
+        const changes = entry.changes || [];
+        for (const change of changes) {
+          const value = change.value || {};
+          const messages = value.messages || [];
+          const contacts = value.contacts || [];
+          for (const msg of messages) {
+            const contact = contacts.find((c) => c.wa_id === msg.from) || {};
+            const messageData = {
+              app: "whatsapp",
+              from: contact.profile?.name || msg.from,
+              phone: msg.from,
+              text: msg.text
+                ? msg.text.body
+                : `[${msg.type || "unknown"} message]`,
+              timestamp: new Date(Number(msg.timestamp) * 1000).toISOString(),
+              type: msg.type || "text",
+              raw_id: msg.id,
+            };
+            console.log("Saving WhatsApp message:", messageData);
+            db.collection("vault_messages").add(messageData);
+          }
+        }
+      }
+      return res.sendStatus(200);
+    }
+
+    // Facebook Messenger / Instagram payload
+    if (body.object === "page" || body.object === "instagram") {
+      for (const entry of body.entry || []) {
+        const messaging = entry.messaging || [];
+        for (const event of messaging) {
+          if (event.message) {
+            const messageData = {
+              app: body.object === "page" ? "messenger" : "instagram",
+              from: event.sender?.id || "unknown",
+              text: event.message.text || "[non-text message]",
+              timestamp: new Date(event.timestamp).toISOString(),
+              type: "text",
+              raw_id: event.message.mid,
+            };
+            console.log("Saving Messenger/IG message:", messageData);
+            db.collection("vault_messages").add(messageData);
+          }
+        }
+      }
+      return res.sendStatus(200);
+    }
+
+    console.log("Unknown webhook object:", body.object);
+    res.sendStatus(404);
+  } catch (err) {
+    console.error("Webhook processing error:", err);
     res.sendStatus(500);
   }
 });
