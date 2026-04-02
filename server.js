@@ -16,7 +16,8 @@ try {
   if (!fs.existsSync(credPath)) {
     credPath = path.join(__dirname, "firebase-key.json");
   }
-  const serviceAccount = require(credPath);
+  console.log("Loading Firebase credentials from:", credPath);
+  const serviceAccount = JSON.parse(fs.readFileSync(credPath, "utf8"));
   if (!admin.apps.length) {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
