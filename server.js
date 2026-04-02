@@ -6,11 +6,16 @@ app.use(express.json());
 // --- Firebase Admin SDK Setup ---
 const admin = require("firebase-admin");
 let db;
+const fs = require("fs");
 try {
-  // Load service account from file path (works locally and on Render with secret files)
-  const credPath =
-    process.env.GOOGLE_APPLICATION_CREDENTIALS ||
-    path.join(__dirname, "firebase-key.json");
+  // Load service account: check env var, then Render secret files, then local
+  let credPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+  if (!credPath || !fs.existsSync(credPath)) {
+    credPath = "/etc/secrets/firebase-key.json";
+  }
+  if (!fs.existsSync(credPath)) {
+    credPath = path.join(__dirname, "firebase-key.json");
+  }
   const serviceAccount = require(credPath);
   if (!admin.apps.length) {
     admin.initializeApp({
